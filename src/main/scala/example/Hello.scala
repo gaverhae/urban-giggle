@@ -14,8 +14,8 @@ object Hello {
     }
     val index = Index.parse(
       files(s(0)),
-      Index.whitespaceSplitter,
-      Index.identityToken)
+      Index.nonLetterSplitter,
+      Index.lowercaseToken)
     val keyb = new Scanner(System.in)
     println()
     while (true) {
@@ -64,8 +64,14 @@ object Index {
   def whitespaceSplitter(s: String): Iterable[String] = {
     s.split(" ")
   }
+  def nonLetterSplitter(s: String): Iterable[String] = {
+    s.split("[^a-zA-Z]")
+  }
   def identityToken(s: String): String = {
     s
+  }
+  def lowercaseToken(s: String): String = {
+    s.toLowerCase
   }
 }
 
