@@ -71,13 +71,19 @@ object Index {
 
 class Index(m: Map[String, Map[String, Int]], parser: (String) => Iterable[String]) {
   def score(s: String): Iterable[Result] = {
-    val results = parser(s)
-      .flatMap(m.getOrElse(_, Map()).map { case (n, s) => (n, s) })
-      .foldLeft(Map[String, Int]()) { case (m, (n, s)) => m.updated(n, m.getOrElse(n, 0) + s) }
-      .map { case (n, s) => (n, s) }
-    val total = results.foldLeft(0)(_ + _._2)
-    results
-      .map { case (n, s) => Result(n, s.toDouble / total) }
+    val words = parser(s).toSet
+    words
+      .toSeq
+      .flatMap((w) => {
+        val docs = m.getOrElse(w, Map()).map { case (n, s) => (n, s) }
+        val max = docs.map(_._2).foldLeft(0)(Math.max(_, _))
+        docs.map((d) => (d._1, d._2.toDouble / (max * words.size)))
+      })
+      .foldLeft(Map[String, Double]())((m, d) => {
+        val prev: Double = m.getOrElse(d._1, 0)
+        m.updated(d._1, prev + d._2)
+      })
+      .map { case (n, s) => Result(n, s) }
       .toSeq
       .sortBy(_.score)
       .reverse
