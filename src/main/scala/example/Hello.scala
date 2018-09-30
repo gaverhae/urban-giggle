@@ -1,13 +1,48 @@
 package example
 
 import scala.collection.immutable.Map
+import scala.io.Source
+import java.util.Scanner
+import java.io.File
 
 object Hello {
   def main(s: Array[String]): Unit = {
-    if (s.length != 1) {
-      throw new IllegalArgumentException("Please specify a single directory.")
+    if (s.length != 1
+      || !(new File(s(0)).isDirectory)
+      || !(new File(s(0)).listFiles().exists(_.isFile))) {
+      throw new IllegalArgumentException("Please specify a single directory with at least one text file in it.")
     }
-    println("hello")
+    val index = Index.parse(
+      files(s(0)),
+      Index.whitespaceSplitter,
+      Index.identityToken)
+    val keyb = new Scanner(System.in)
+    println()
+    while (true) {
+      print("search> ")
+      val line = keyb.nextLine()
+      if (line == ":quit") {
+        println("Bye!")
+        System.exit(0)
+      }
+      displayResults(index.score(line))
+    }
+  }
+  def files(root: String): Iterable[RawDoc] = {
+    new File(root)
+      .listFiles()
+      .filter(_.isFile)
+      .map((f) => {
+        val buf = Source.fromFile(f)
+        val s = buf.getLines.mkString
+        buf.close
+        RawDoc(f.getName, s)
+      })
+  }
+  def displayResults(rs: Iterable[Result]): Unit = {
+    for (r <- rs) {
+      println(f"${r.name}%s: ${r.score * 100}%5.2f%%")
+    }
   }
 }
 
@@ -42,7 +77,7 @@ class Index(m: Map[String, Map[String, Int]], parser: (String) => Iterable[Strin
       .map { case (n, s) => (n, s) }
     val total = results.foldLeft(0)(_ + _._2)
     results
-      .map { case (n, s) => Result(n, s / total) }
+      .map { case (n, s) => Result(n, s.toDouble / total) }
       .toSeq
       .sortBy(_.score)
       .reverse
