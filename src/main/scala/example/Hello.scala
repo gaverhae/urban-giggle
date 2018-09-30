@@ -25,7 +25,7 @@ object Hello {
         println("Bye!")
         System.exit(0)
       }
-      displayResults(index.scoreSimpleMatch(line))
+      displayResults(index.scoreSimpleMatch(line).take(10))
     }
   }
   def files(root: String): Iterable[RawDoc] = {
