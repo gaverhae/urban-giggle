@@ -2,8 +2,14 @@ package example
 
 import org.scalatest._
 
-class HelloSpec extends FlatSpec with Matchers {
-  "The Hello object" should "say hello" in {
-    Hello.greeting shouldEqual "hello"
+class Spec extends FlatSpec with Matchers {
+  "Built index" should "return documents that match" in {
+    val i = Index.parse(
+      Seq(
+        RawDoc("Hamlet", "to be or not to be that is the question"),
+        RawDoc("Not Hamlet", "no matching word")),
+      Index.whitespaceSplitter,
+      Index.identityToken)
+    i.score("to be or not to be") shouldEqual Seq(Result("Hamlet", 1.0))
   }
 }

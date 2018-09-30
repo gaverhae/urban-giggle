@@ -1,2 +1,5 @@
 target
 files
+/bin/
+.cache-tests
+.cache-main
