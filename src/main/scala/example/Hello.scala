@@ -25,7 +25,7 @@ object Hello {
         println("Bye!")
         System.exit(0)
       }
-      displayResults(index.score(line))
+      displayResults(index.scoreSimpleMatch(line))
     }
   }
   def files(root: String): Iterable[RawDoc] = {
@@ -70,7 +70,14 @@ object Index {
 }
 
 class Index(m: Map[String, Map[String, Int]], parser: (String) => Iterable[String]) {
-  def score(s: String): Iterable[Result] = {
+  def scoreSimpleMatch(s: String): Iterable[Result] = {
+    val unitM = m.mapValues((docs) => docs.mapValues((i) => 1))
+    score(unitM, s)
+  }
+  def scoreWithCount(s: String): Iterable[Result] = {
+    score(m, s)
+  }
+  def score(m: Map[String, Map[String, Int]], s: String): Iterable[Result] = {
     val words = parser(s).toSet
     words
       .toSeq
